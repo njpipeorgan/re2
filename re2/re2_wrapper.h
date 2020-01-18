@@ -33,7 +33,8 @@ extern "C" bool _re2_RE2_match_impl(const void* regex_ptr,
 namespace re2
 {
 
-template<typename CharT, typename = std::enable_if_t<sizeof(CharT) == 1u>>
+template<typename CharT,
+    typename = typename std::enable_if<sizeof(CharT) == 1u>::type>
 std::shared_ptr<re2::RE2> re2_new(const CharT* pattern)
 {
     auto re2_deleter = [](re2::RE2* ptr)
@@ -48,7 +49,7 @@ std::shared_ptr<re2::RE2> re2_new(const CharT* pattern)
 }
 
 template<typename PieceT,
-    typename = std::enable_if_t<std::is_same_v<PieceT, re2::StringPiece>>>
+    typename = std::enable_if<std::is_same<PieceT, re2::StringPiece>::value>>
 bool re2_match(
     const re2::RE2& regex, const PieceT& string_piece, size_t startpos,
     size_t endpos, RE2::Anchor re_anchor, PieceT* submatch, int nsubmatch)
