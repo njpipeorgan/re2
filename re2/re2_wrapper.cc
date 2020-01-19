@@ -15,13 +15,16 @@
 // limitations under the License.
 //
 
+#include <cstring>
+
 #include "re2/re2_wrapper.h"
 
 extern "C" void* _re2_RE2_construct_impl(const char* pattern)
 {
     try
     {
-        return static_cast<void*>(new re2::RE2(pattern));
+        return static_cast<void*>(new re2::RE2(
+            pattern, re2::RE2::CannedOptions::Quiet));
     }
     catch(...)
     {
@@ -42,4 +45,26 @@ extern "C" bool _re2_RE2_match_impl(const void* regex_ptr,
     return regex.Match(*static_cast<const re2::StringPiece*>(piece_ptr),
         startpos, endpos, re2::RE2::Anchor(re_anchor),
         static_cast<re2::StringPiece*>(submatch), nsubmatch);
+}
+
+extern "C" bool _re2_RE2_ok(const void* regex_ptr)
+{
+    const auto& regex = *static_cast<const re2::RE2*>(regex_ptr);
+    return regex.ok();
+}
+
+extern "C" void _re2_RE2_error(const void* regex_ptr, char* buffer,
+    const size_t buffer_size)
+{
+    const auto& regex = *static_cast<const re2::RE2*>(regex_ptr);
+    const auto& error_str = regex.error();
+    if (buffer_size > error_str.size())
+    {
+        std::strcpy(buffer, error_str.c_str());
+    }
+    else if (buffer_size > 0u)
+    {
+        std::strncpy(buffer, error_str.c_str(), buffer_size - 1u);
+        buffer[buffer_size - 1u] = '\0';
+    }
 }

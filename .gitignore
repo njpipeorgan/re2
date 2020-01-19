@@ -3,3 +3,8 @@
 core
 obj/
 benchlog.*
+.vs/
+out/
+CMakeSettings.json
+*.o
+*.a
